@@ -24,19 +24,27 @@ struct Day01: Solution {
     }
 
     func second() -> Any {
+        if let (expense1, expense2, expense3) = time({ findTriple(summingTo: 2020) }) {
+            return expense1 * expense2 * expense3
+        } else {
+            return "Unable to find a triple summing to 2020"
+        }
+    }
+
+    func findTriple(summingTo goal: Int) -> (Int, Int, Int)? {
         for (index, expense) in expenses.enumerated() {
             if let (expense1, expense2) = findPair(
-                summingTo: 2020 - expense,
+                summingTo: goal - expense,
                 withoutIndex: index
             ) {
                 // Sum should be 2020
                 let sum = expense + expense1 + expense2
                 print("Triple summing to \(sum) is \(expense), \(expense1), \(expense2)")
-                return expense * expense1 * expense2
+                return (expense, expense1, expense2)
             }
         }
 
-        return "Unable to find a triple summing to 2020"
+        return nil
     }
 
     func findPair(

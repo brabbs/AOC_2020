@@ -12,7 +12,7 @@ final class AOC_2020Tests: XCTestCase {
             return
         }
 
-        let fooBinary = productsDirectory.appendingPathComponent("AOC-2020")
+        let fooBinary = productsDirectory.appendingPathComponent("AOC_2020")
 
         let process = Process()
         process.executableURL = fooBinary
