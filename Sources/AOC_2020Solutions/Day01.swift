@@ -76,12 +76,13 @@ struct Day01: Solution {
         return (expensesToSearch[lowIndex], expensesToSearch[highIndex])
     }
 
-    func getExpenses(withoutIndex indexToIgnore: Array<Int>.Index? = nil) -> ArraySlice<Int> {
+    func getExpenses(withoutIndex indexToIgnore: Array<Int>.Index? = nil) -> [Int] {
         if let indexToIgnore = indexToIgnore {
-            let suffixStart = expenses.index(after: indexToIgnore)
-            return expenses[..<indexToIgnore] + expenses[suffixStart...]
+            var result = expenses
+            result.remove(at: indexToIgnore)
+            return result
         } else {
-            return ArraySlice(expenses)
+            return expenses
         }
     }
 }
