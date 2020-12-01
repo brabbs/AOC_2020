@@ -16,15 +16,34 @@ struct Day01: Solution {
     }
 
     func first() -> Any {
+        if let (expense1, expense2) = findPair(summingTo: 2020) {
+            return expense1 * expense2
+        } else {
+            return "Unable to find pair that sums exactly to 2020"
+        }
+    }
+
+    func second() -> Any {
+        for expense in expenses {
+            if let (expense1, expense2) = findPair(summingTo: 2020 - expense) {
+                // Sum should be 2020
+                let sum = expense + expense1 + expense2
+                print("Triple summing to \(sum) is \(expense), \(expense1), \(expense2)")
+                return expense * expense1 * expense2
+            }
+        }
+
+        return "Unable to find a triple summing to 2020"
+    }
+
+    func findPair(summingTo goal: Int) -> (Int, Int)? {
         var sum = 0
         // Start with the highest number and the lowest number
         var lowIndex = expenses.startIndex
         var highIndex = expenses.endIndex - 1
 
-        let goal = 2020
         while (sum != goal) {
             sum = expenses[lowIndex] + expenses[highIndex]
-            print("Total: \(sum), \(lowIndex):\(highIndex)")
             if sum < goal {
                 // Sum is too low, increase the lower number
                 lowIndex += 1
@@ -35,14 +54,10 @@ struct Day01: Solution {
 
             if lowIndex == highIndex {
                 // We've met in the middle and not found an exact solution
-                return "No solution found"
+                return nil
             }
         }
 
-        return expenses[lowIndex] * expenses[highIndex]
-    }
-
-    func second() -> Any {
-        "Second answer not yet implemented"
+        return (expenses[lowIndex], expenses[highIndex])
     }
 }
