@@ -24,8 +24,11 @@ struct Day01: Solution {
     }
 
     func second() -> Any {
-        for expense in expenses {
-            if let (expense1, expense2) = findPair(summingTo: 2020 - expense) {
+        for (index, expense) in expenses.enumerated() {
+            if let (expense1, expense2) = findPair(
+                summingTo: 2020 - expense,
+                withoutIndex: index
+            ) {
                 // Sum should be 2020
                 let sum = expense + expense1 + expense2
                 print("Triple summing to \(sum) is \(expense), \(expense1), \(expense2)")
@@ -36,20 +39,24 @@ struct Day01: Solution {
         return "Unable to find a triple summing to 2020"
     }
 
-    func findPair(summingTo goal: Int) -> (Int, Int)? {
+    func findPair(
+        summingTo goal: Int,
+        withoutIndex indexToIgnore: Array<Int>.Index? = nil
+    ) -> (Int, Int)? {
+        let expensesToSearch = getExpenses(withoutIndex: indexToIgnore)
         var sum = 0
         // Start with the highest number and the lowest number
-        var lowIndex = expenses.startIndex
-        var highIndex = expenses.endIndex - 1
+        var lowIndex = expensesToSearch.startIndex
+        var highIndex = expensesToSearch.index(before: expensesToSearch.endIndex)
 
         while (sum != goal) {
-            sum = expenses[lowIndex] + expenses[highIndex]
+            sum = expensesToSearch[lowIndex] + expensesToSearch[highIndex]
             if sum < goal {
                 // Sum is too low, increase the lower number
-                lowIndex += 1
+                lowIndex = expensesToSearch.index(after: lowIndex)
             } else if sum > goal {
                 // Sum is too high, decrease the higher number
-                highIndex -= 1
+                highIndex = expensesToSearch.index(before: highIndex)
             }
 
             if lowIndex == highIndex {
@@ -58,6 +65,15 @@ struct Day01: Solution {
             }
         }
 
-        return (expenses[lowIndex], expenses[highIndex])
+        return (expensesToSearch[lowIndex], expensesToSearch[highIndex])
+    }
+
+    func getExpenses(withoutIndex indexToIgnore: Array<Int>.Index? = nil) -> ArraySlice<Int> {
+        if let indexToIgnore = indexToIgnore {
+            let suffixStart = expenses.index(after: indexToIgnore)
+            return expenses[..<indexToIgnore] + expenses[suffixStart...]
+        } else {
+            return ArraySlice(expenses)
+        }
     }
 }
