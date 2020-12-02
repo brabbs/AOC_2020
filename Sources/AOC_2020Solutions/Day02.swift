@@ -16,18 +16,20 @@ struct Day02: Solution {
     }
 
     func first() -> Any {
-        time { passwords.count { $0.isValid() } }
+        time { passwords.count { $0.isValidPartOne() } }
     }
 
     func second() -> Any {
-        "Second answer not yet implemented"
+        time { passwords.count { $0.isValidPartTwo() } }
     }
 }
 
 extension Day02 {
     struct PasswordEntry {
-        let minOccurences: Int
-        let maxOccurences: Int
+        // In part 1 the numbers are the min and max. In part 2 they are indicies.
+        let firstNumber: Int
+        let secondNumber: Int
+
         let requiredLetter: Character
         let password: String
 
@@ -35,9 +37,9 @@ extension Day02 {
             let parts = databaseEntry.split(separator: " ")
 
             // First part should look like: "1-3"
-            let occuranceLimits = parts[0].split(separator: "-").compactMap { Int($0) }
-            minOccurences = occuranceLimits[0]
-            maxOccurences = occuranceLimits[1]
+            let numbers = parts[0].split(separator: "-").compactMap { Int($0) }
+            firstNumber = numbers[0]
+            secondNumber = numbers[1]
 
             // Next we get something like "b:"
             requiredLetter = parts[1].first!
@@ -46,9 +48,19 @@ extension Day02 {
             password = String(parts[2])
         }
 
-        func isValid() -> Bool {
+        func isValidPartOne() -> Bool {
             let occurances = password.count(of: requiredLetter)
-            return minOccurences <= occurances && occurances <= maxOccurences
+            return firstNumber <= occurances && occurances <= secondNumber
+        }
+
+        func isValidPartTwo() -> Bool {
+            let firstIndex = password.index(password.startIndex, offsetBy: firstNumber - 1)
+            let secondIndex = password.index(password.startIndex, offsetBy: secondNumber - 1)
+            let firstLetter = password[firstIndex]
+            let secondLetter = password[secondIndex]
+
+            return (firstLetter == requiredLetter && secondLetter != requiredLetter)
+                || (firstLetter != requiredLetter && secondLetter == requiredLetter)
         }
     }
 }
