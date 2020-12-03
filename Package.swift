@@ -19,6 +19,7 @@ let package = Package(
             .process("Input/Day01.txt"),
             .process("Input/Day02.txt"),
         ]),
+        .testTarget(name: "AOC_2020SolutionsTests", dependencies: ["AOC_2020Solutions"]),
         .target(name: "AOC_2020", dependencies: [
             "AOC_2020Solutions",
             .product(name: "ArgumentParser", package: "swift-argument-parser"),

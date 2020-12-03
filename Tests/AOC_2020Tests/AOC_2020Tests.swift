@@ -20,13 +20,15 @@ final class AOC_2020Tests: XCTestCase {
         let pipe = Pipe()
         process.standardOutput = pipe
 
+        process.arguments = ["--help"]
+
         try process.run()
         process.waitUntilExit()
 
         let data = pipe.fileHandleForReading.readDataToEndOfFile()
-        let output = String(data: data, encoding: .utf8)
+        let output = try XCTUnwrap(String(data: data, encoding: .utf8))
 
-        XCTAssertEqual(output, "Hello, world!\n")
+        XCTAssert(output.starts(with: "USAGE"))
     }
 
     /// Returns path to the built products directory.
