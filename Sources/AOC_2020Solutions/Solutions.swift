@@ -29,6 +29,7 @@ public func getSolution(_ day: Int) throws -> Solution {
     switch day {
     case 1: return Day01(input: inputString)
     case 2: return Day02(input: inputString)
+    case 3: return Day03(input: inputString)
     default: throw SolutionError.noSolutionForDay
     }
 }
