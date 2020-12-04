@@ -40,37 +40,39 @@ extension Day04 {
         func isValid() -> Bool {
             Credential.northPoleCredentials.isSubset(of: credentials)
         }
+    }
+}
 
-        enum Credential: CaseIterable {
-            case birthYear
-            case issueYear
-            case expirationYear
-            case height
-            case hairColor
-            case eyeColor
-            case passportID
-            case countryID
+extension Day04.IdentitiyDocument {
+    enum Credential: CaseIterable {
+        case birthYear
+        case issueYear
+        case expirationYear
+        case height
+        case hairColor
+        case eyeColor
+        case passportID
+        case countryID
 
-            init?(fieldName: String) {
-                switch fieldName {
-                case "byr": self = .birthYear
-                case "iyr": self = .issueYear
-                case "eyr": self = .expirationYear
-                case "hgt": self = .height
-                case "hcl": self = .hairColor
-                case "ecl": self = .eyeColor
-                case "pid": self = .passportID
-                case "cid": self = .countryID
-                default: return nil
-                }
+        init?(fieldName: String) {
+            switch fieldName {
+            case "byr": self = .birthYear
+            case "iyr": self = .issueYear
+            case "eyr": self = .expirationYear
+            case "hgt": self = .height
+            case "hcl": self = .hairColor
+            case "ecl": self = .eyeColor
+            case "pid": self = .passportID
+            case "cid": self = .countryID
+            default: return nil
             }
-
-            static let northPoleCredentials: Set<Credential> = {
-                // North Pole credentials has everything a passport has apart from the country ID
-                var credentials = Set(Credential.allCases)
-                credentials.remove(.countryID)
-                return credentials
-            }()
         }
+
+        static let northPoleCredentials: Set<Credential> = {
+            // North Pole credentials has everything a passport has apart from the country ID
+            var credentials = Set(Credential.allCases)
+            credentials.remove(.countryID)
+            return credentials
+        }()
     }
 }
