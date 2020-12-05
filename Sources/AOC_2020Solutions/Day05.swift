@@ -19,7 +19,16 @@ struct Day05: Solution {
     }
 
     func second() -> Any {
-        "Second answer not yet implemented"
+        let ids = seats.lazy.map(\.id)
+
+        let sum = ids.reduce(0, +)
+
+        // Work out the sum if we had every number from min to max inclusive
+        let max = ids.max()!
+        let min = ids.min()!
+        let expectedSum = (max*(max + 1) - min*(min - 1)) / 2
+
+        return expectedSum - sum
     }
 }
 
