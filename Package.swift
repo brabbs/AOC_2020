@@ -15,12 +15,7 @@ let package = Package(
         ),
     ],
     targets: [
-        .target(name: "AOC_2020Solutions", resources: [
-            .process("Input/Day01.txt"),
-            .process("Input/Day02.txt"),
-            .process("Input/Day03.txt"),
-            .process("Input/Day04.txt"),
-        ]),
+        .target(name: "AOC_2020Solutions", resources: [.process("Input/")]),
         .testTarget(name: "AOC_2020SolutionsTests", dependencies: ["AOC_2020Solutions"]),
         .target(name: "AOC_2020", dependencies: [
             "AOC_2020Solutions",
