@@ -32,6 +32,7 @@ public func getSolution(_ day: Int) throws -> Solution {
     case 3: return Day03(input: inputString)
     case 4: return Day04(input: inputString)
     case 5: return Day05(input: inputString)
+    case 6: return Day06(input: inputString)
     default: throw SolutionError.noSolutionForDay
     }
 }
