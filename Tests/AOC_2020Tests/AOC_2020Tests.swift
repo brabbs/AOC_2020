@@ -2,11 +2,8 @@ import XCTest
 import class Foundation.Bundle
 
 final class AOC_2020Tests: XCTestCase {
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct
-        // results.
-
+    /// Test that we get some help text when we pass --help to the tool
+    func testHelpText() throws {
         // Some of the APIs that we use below are available in macOS 10.13 and above.
         guard #available(macOS 10.13, *) else {
             return
@@ -44,6 +41,6 @@ final class AOC_2020Tests: XCTestCase {
     }
 
     static var allTests = [
-        ("testExample", testExample),
+        ("testExample", testHelpText),
     ]
 }
