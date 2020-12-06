@@ -16,29 +16,50 @@ struct Day06: Solution {
 
     func first() -> Any {
         groups.lazy
-            .map(\.yesCount)
+            .map { $0.anyYesCount() }
             .reduce(0, +)
     }
 
     func second() -> Any {
-        "Second answer not yet implemented"
+        groups.lazy
+            .map { $0.allYesCount() }
+            .reduce(0, +)
     }
 }
 
 extension Day06 {
     struct Group {
-        let yesAnswers: Set<Unicode.Scalar>
-        var yesCount: Int { yesAnswers.count }
-
+        let people: [Person]
 
         init(rawString: String) {
-            yesAnswers = rawString.unicodeScalars.reduce(
-                into: Set<Unicode.Scalar>()
-            ) { result, answer in
-                if CharacterSet.lowercaseLetters.contains(answer) {
-                    result.insert(answer)
+            people = rawString
+                .components(separatedBy: "\n")
+                .map(Person.init(rawString:))
+        }
+
+        func anyYesCount() -> Int {
+            people.reduce(into: Set<Unicode.Scalar>()) { result, person in
+                result.formUnion(person.yesAnswers)
+            }.count
+        }
+
+        func allYesCount() -> Int {
+            guard let firstPerson = people.first else { return 0 }
+            return people
+                .dropFirst()
+                .reduce(firstPerson.yesAnswers) { result, person in
+                    result.intersection(person.yesAnswers)
                 }
-            }
+                .count
+        }
+    }
+}
+
+extension Day06.Group {
+    struct Person {
+        let yesAnswers: Set<Unicode.Scalar>
+        init(rawString: String) {
+            yesAnswers = Set(rawString.unicodeScalars)
         }
     }
 }
