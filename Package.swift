@@ -13,10 +13,15 @@ let package = Package(
             url: "https://github.com/apple/swift-argument-parser",
             .upToNextMinor(from: "0.3.0")
         ),
+        .package(url: "https://github.com/sharplet/Regex.git", from: "2.1.0"),
     ],
     targets: [
-        .target(name: "AOC_2020Solutions", resources: [.process("Input/")]),
+        .target(
+            name: "AOC_2020Solutions",
+            dependencies: ["Regex"],
+            resources: [.process("Input/")]),
         .testTarget(name: "AOC_2020SolutionsTests", dependencies: ["AOC_2020Solutions"]),
+
         .target(name: "AOC_2020", dependencies: [
             "AOC_2020Solutions",
             .product(name: "ArgumentParser", package: "swift-argument-parser"),
