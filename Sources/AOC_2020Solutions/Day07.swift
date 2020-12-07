@@ -8,19 +8,9 @@ import Regex
 
 struct Day07: Solution {
     let bagRules: [BagRule]
+    let myBagName = "shiny gold"
 
     init(input: String) {
-        let fakeInput = """
-        light red bags contain 1 bright white bag, 2 muted yellow bags.
-        dark orange bags contain 3 bright white bags, 4 muted yellow bags.
-        bright white bags contain 1 shiny gold bag.
-        muted yellow bags contain 2 shiny gold bags, 9 faded blue bags.
-        shiny gold bags contain 1 dark olive bag, 2 vibrant plum bags.
-        dark olive bags contain 3 faded blue bags, 4 dotted black bags.
-        vibrant plum bags contain 5 faded blue bags, 6 dotted black bags.
-        faded blue bags contain no other bags.
-        dotted black bags contain no other bags.
-        """
         bagRules = input
             .components(separatedBy: "\n")
             .compactMap(BagRule.init(rawString:))
@@ -28,7 +18,7 @@ struct Day07: Solution {
 
     func first() -> Any {
         let canBeContainedGraph = getCanBeContainedGraph()
-        var toBeVisited: [String] = ["shiny gold"]
+        var toBeVisited: [String] = [myBagName]
         var visited: [String] = []
 
         while let currentBag = toBeVisited.popLast() {
@@ -60,8 +50,51 @@ struct Day07: Solution {
         return canBeContainedGraph
     }
 
-    func second() -> Any {
-        "Second answer not yet implemented"
+    func second() throws -> Any {
+        // Keys are bag names. Values are the number of bags they contain.
+        var bagValues = [String: Int]()
+        var toCalculate = [myBagName]
+
+        while let currentBag = toCalculate.last {
+            if bagValues.keys.contains(currentBag) {
+                // Already done this one
+                toCalculate.removeLast()
+                continue
+            }
+
+            let currentBagRule = try getBagRule(for: currentBag)
+            if currentBagRule.containedBags.contains(where: {
+                !bagValues.keys.contains($0.bagName)
+            }) {
+                // Need to calculate a contained bag first
+                let uncalculatedBagNames = currentBagRule
+                    .containedBags
+                    .filter { !bagValues.keys.contains($0.bagName) }
+                    .map(\.bagName)
+                toCalculate.append(contentsOf: uncalculatedBagNames)
+            } else {
+                // Have all the info to calculate this bag
+                let value = currentBagRule
+                    .containedBags
+                    .compactMap { containedBag -> Int? in
+                        // bagValue should never be nil here
+                        guard let bagValue = bagValues[containedBag.bagName] else { return nil }
+                        return containedBag.quantity * (1 + bagValue)
+                    }
+                    .reduce(0, +)
+                bagValues[currentBag] = value
+                toCalculate.removeLast()
+            }
+        }
+
+        return bagValues[myBagName] ?? -1
+    }
+
+    func getBagRule(for bagName: String) throws -> BagRule {
+        guard let bagRule = bagRules.first(where: { $0.bagName == bagName }) else {
+            throw Day07Error.noBagRuleForBagName(bagName)
+        }
+        return bagRule
     }
 }
 
@@ -114,5 +147,11 @@ extension Day07.BagRule {
             self.quantity = quantity
             self.bagName = bagName
         }
+    }
+}
+
+extension Day07 {
+    enum Day07Error: Error {
+        case noBagRuleForBagName(String)
     }
 }

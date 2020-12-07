@@ -7,8 +7,8 @@ import Foundation
 public protocol Solution {
     init(input: String)
 
-    func first() -> Any
-    func second() -> Any
+    func first() throws -> Any
+    func second() throws -> Any
 }
 
 public enum SolutionError: Error {

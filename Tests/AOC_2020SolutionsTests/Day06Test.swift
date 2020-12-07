@@ -18,7 +18,7 @@ final class Day06Test: XCTestCase {
     func testPartOnePerformance() {
         measure {
             guard let solution = try? getSolution(6) else { return }
-            guard let first = solution.first() as? Int else { return }
+            guard let first = try? solution.first() as? Int else { return }
             XCTAssertEqual(first, 6911)
         }
     }
@@ -32,7 +32,7 @@ final class Day06Test: XCTestCase {
     func testPartTwoPerformance() {
         measure {
             guard let solution = try? getSolution(6) else { return }
-            guard let first = solution.second() as? Int else { return }
+            guard let first = try? solution.second() as? Int else { return }
             XCTAssertEqual(first, 3473)
         }
     }

@@ -8,8 +8,8 @@ struct PrintSolution: ParsableCommand {
     func run() {
         do {
             let solution = try getSolution(week)
-            print(solution.first())
-            print(solution.second())
+            print(try solution.first())
+            print(try solution.second())
         } catch {
             print(error)
         }
