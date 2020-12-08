@@ -25,15 +25,15 @@ final class Day06Test: XCTestCase {
 
     func testPartTwo() throws {
         let solution = try getSolution(6)
-        let first = try XCTUnwrap(solution.second() as? Int)
-        XCTAssertEqual(first, 3473)
+        let second = try XCTUnwrap(solution.second() as? Int)
+        XCTAssertEqual(second, 3473)
     }
 
     func testPartTwoPerformance() {
         measure {
             guard let solution = try? getSolution(6) else { return }
-            guard let first = try? solution.second() as? Int else { return }
-            XCTAssertEqual(first, 3473)
+            guard let second = try? solution.second() as? Int else { return }
+            XCTAssertEqual(second, 3473)
         }
     }
 }
