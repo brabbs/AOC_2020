@@ -7,6 +7,8 @@
 
 import Foundation
 
+/// Wrapper of an array where we can get high performing algorithms by
+/// guarunteeing that the elements of the array are sorted.
 struct SortedArray<Element> where Element: Comparable {
     private let array: [Element]
 
