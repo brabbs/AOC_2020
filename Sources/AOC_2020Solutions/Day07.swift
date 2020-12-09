@@ -81,7 +81,7 @@ struct Day07: Solution {
                         guard let bagValue = bagValues[containedBag.bagName] else { return nil }
                         return containedBag.quantity * (1 + bagValue)
                     }
-                    .reduce(0, +)
+                    .sum()
                 bagValues[currentBag] = value
                 toCalculate.removeLast()
             }

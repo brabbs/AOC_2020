@@ -21,7 +21,7 @@ struct Day05: Solution {
     func second() -> Any {
         let ids = seats.lazy.map(\.id)
 
-        let sum = ids.reduce(0, +)
+        let sum = ids.sum()
 
         // Work out the sum if we had every number from min to max inclusive
         let max = ids.max()!

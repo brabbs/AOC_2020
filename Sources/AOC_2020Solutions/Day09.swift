@@ -27,6 +27,38 @@ struct Day09: Solution {
     }
 
     func second() -> Any {
-        "Second answer not yet implemented"
+        let range = contiguousRange(summingTo: 530627549)
+        guard
+            let smallest = range?.min(),
+            let largest = range?.max()
+        else {
+            return "No range found"
+        }
+
+        return smallest + largest
+    }
+
+    func contiguousRange(summingTo goal: Int) -> [Int]? {
+        var lowIndex = cypher.startIndex
+        var highIndex = cypher.startIndex
+        var runningSum = 0
+
+        while highIndex < cypher.endIndex ||
+                (highIndex == cypher.endIndex && runningSum >= goal) {
+            if runningSum == goal {
+                return Array(cypher[lowIndex..<highIndex])
+            } else if runningSum < goal {
+                // Sum is too low, need to add the next number along
+                runningSum += cypher[highIndex]
+                highIndex += 1
+            } else if runningSum > goal {
+                // Sum is too high, need to remove the earliest number
+                runningSum -= cypher[lowIndex]
+                lowIndex += 1
+            }
+        }
+
+        // Ran through whole array and didn't find a range summing to the goal
+        return nil
     }
 }

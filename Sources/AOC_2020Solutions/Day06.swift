@@ -17,13 +17,13 @@ struct Day06: Solution {
     func first() -> Any {
         groups.lazy
             .map { $0.anyYesCount() }
-            .reduce(0, +)
+            .sum()
     }
 
     func second() -> Any {
         groups.lazy
             .map { $0.allYesCount() }
-            .reduce(0, +)
+            .sum()
     }
 }
 
