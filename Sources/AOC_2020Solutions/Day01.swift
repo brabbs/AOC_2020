@@ -52,28 +52,8 @@ struct Day01: Solution {
         withoutIndex indexToIgnore: Array<Int>.Index? = nil
     ) -> (Int, Int)? {
         let expensesToSearch = getExpenses(withoutIndex: indexToIgnore)
-        var sum = 0
-        // Start with the highest number and the lowest number
-        var lowIndex = expensesToSearch.startIndex
-        var highIndex = expensesToSearch.index(before: expensesToSearch.endIndex)
-
-        while (sum != goal) {
-            sum = expensesToSearch[lowIndex] + expensesToSearch[highIndex]
-            if sum < goal {
-                // Sum is too low, increase the lower number
-                lowIndex = expensesToSearch.index(after: lowIndex)
-            } else if sum > goal {
-                // Sum is too high, decrease the higher number
-                highIndex = expensesToSearch.index(before: highIndex)
-            }
-
-            if lowIndex == highIndex {
-                // We've met in the middle and not found an exact solution
-                return nil
-            }
-        }
-
-        return (expensesToSearch[lowIndex], expensesToSearch[highIndex])
+        let sortedExpenses = SortedArray(expensesToSearch)
+        return sortedExpenses.pairSumming(to: goal)
     }
 
     func getExpenses(withoutIndex indexToIgnore: Array<Int>.Index? = nil) -> [Int] {
