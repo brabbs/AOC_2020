@@ -23,7 +23,11 @@ struct Day12: Solution {
     }
 
     func second() -> Any {
-        "Second answer not yet implemented"
+        var ship = Ship()
+        for instruction in instructions {
+            ship.enactWaypoint(instruction)
+        }
+        return ship.distanceFromOrigin
     }
 }
 
@@ -31,6 +35,7 @@ extension Day12 {
     struct Ship {
         var location = Location.origin
         var bearing = Bearing.east
+        var waypoint = Location(east: 10, north: 1)
 
         mutating func enact(_ instruction: Instruction) {
             switch instruction.action {
@@ -56,6 +61,45 @@ extension Day12 {
         var distanceFromOrigin: Int {
             location.manhattenDistance(from: .origin)
         }
+    }
+}
+
+extension Day12.Ship {
+    mutating func enactWaypoint(_ instruction: Instruction) {
+        switch instruction.action {
+        case .move(let instructionBearing): moveWaypoint(instruction.value, on: instructionBearing)
+        case .turnClockwise: turnWaypointClockwise(instruction.value)
+        case .forward: moveInWaypointDirection(instruction.value)
+        }
+    }
+
+    mutating func moveWaypoint(_ distance: Int, on bearing: Bearing) {
+        switch bearing {
+        case .east: waypoint.east += distance
+        case .west: waypoint.east -= distance
+        case .north: waypoint.north += distance
+        case .south: waypoint.north -= distance
+        }
+    }
+
+    mutating func turnWaypointClockwise(_ quarterTurns: Int) {
+        // Get equivalent between 0 and 3
+        let standardTurns = ((quarterTurns % 4) + 4) % 4
+        switch standardTurns {
+        case 0: return
+        case 1:
+            waypoint = Location(east: waypoint.north, north: -waypoint.east)
+        case 2:
+            waypoint = Location(east: -waypoint.east, north: -waypoint.north)
+        case 3:
+            waypoint = Location(east: -waypoint.north, north: waypoint.east)
+        default: return
+        }
+    }
+
+    mutating func moveInWaypointDirection(_ times: Int) {
+        location.east += waypoint.east * times
+        location.north += waypoint.north * times
     }
 }
 
