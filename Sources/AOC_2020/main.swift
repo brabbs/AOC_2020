@@ -3,11 +3,11 @@ import AOC_2020Solutions
 
 struct PrintSolution: ParsableCommand {
     @Option(name: .shortAndLong, help: "The day of Advent of Code")
-    var week: Int
+    var day: Int
 
     func run() {
         do {
-            let solution = try getSolution(week)
+            let solution = try getSolution(day)
             print(try solution.first())
             print(try solution.second())
         } catch {
