@@ -22,7 +22,20 @@ struct Day11: Solution {
     }
 
     func second() -> Any {
-        "Second answer not yet implemented"
+        var movingPlan = plan
+        while true {
+            let layout = movingPlan.layout
+            movingPlan.moveTwo()
+            let newLayout = movingPlan.layout
+
+            let changed = newLayout.enumerated().contains { y, row in
+                row.enumerated().contains { x, item in
+                    item != layout[y][x]
+                }
+            }
+            if !changed { break }
+        }
+        return movingPlan.occupiedSeats()
     }
 }
 
@@ -31,6 +44,7 @@ extension Day11 {
         var layout: [[Item]]
         let width: Int
         let height: Int
+        lazy var sightlineNeighbours = getSightlineNeighbours()
 
         init(rawString: String) {
             layout = rawString
@@ -86,8 +100,8 @@ extension Day11 {
             !neighbours.contains(.occupied)
         }
 
-        func occupiedSeatWillEmpty(surroundedBy neighbours: [Item]) -> Bool {
-            neighbours.count(of: .occupied) >= 4
+        func occupiedSeatWillEmpty(surroundedBy neighbours: [Item], threshold: Int = 4) -> Bool {
+            neighbours.count(of: .occupied) >= threshold
         }
 
         func neighboursOfSeat(_ column: Int, _ row: Int) -> [Item] {
@@ -108,8 +122,79 @@ extension Day11 {
 
         func occupiedSeats() -> Int {
             layout
+                .lazy
                 .map { row in row.count(of: .occupied) }
                 .sum()
+        }
+
+        // MARK: Move Two
+
+        mutating func moveTwo() {
+            let newLayout = (0..<height).map { (row: Int) -> [Item] in
+                (0..<width).map { (column: Int) -> Item in
+                    itemAfterMoveTwoAt(column, row)
+                }
+            }
+            layout = newLayout
+        }
+
+        mutating func itemAfterMoveTwoAt(_ column: Int, _ row: Int) -> Item {
+            guard let item = self[column, row] else {
+                return .floor
+            }
+
+            let neighbours = sightlineNeighbours[Location(x: column, y: row)]?
+                .compactMap { self[$0.x, $0.y] }
+                ?? []
+
+            switch item {
+            case .floor: return .floor
+            case .empty:
+                let willFill = emptySeatWillFill(surroundedBy: neighbours)
+                return willFill ? .occupied : .empty
+            case .occupied:
+                let willEmpty = occupiedSeatWillEmpty(surroundedBy: neighbours, threshold: 5)
+                return willEmpty ? .empty : .occupied
+            }
+        }
+
+        // MARK: Sightline Neighbours
+
+        func getSightlineNeighbours() -> [Location: [Location]] {
+            (0..<width).reduce(into: [Location: [Location]]()) { neighbours, x in
+                neighbours = (0..<height).reduce(into: neighbours) { neighbours, y in
+                    let location = Location(x: x, y: y)
+                    neighbours[location] = getSightlineNeighboursFrom(location)
+                }
+            }
+        }
+
+        func getSightlineNeighboursFrom(_ location: Location) -> [Location] {
+            Self.directionVectors.compactMap { direction in
+                getSightlineNeighbourFrom(location, direction: direction)
+            }
+        }
+
+        func getSightlineNeighbourFrom(
+            _ location: Location,
+            direction: (x: Int, y: Int)
+        ) -> Location? {
+            var neighbourLocation = location
+            while true {
+                // Keep moving in the direction until we find a chair
+                neighbourLocation = Location(
+                    x: neighbourLocation.x + direction.x,
+                    y: neighbourLocation.y + direction.y)
+                guard let item = self[neighbourLocation.x, neighbourLocation.y] else {
+                    // We've got to the edge of the board
+                    return nil
+                }
+
+                switch item {
+                case .empty, .occupied: return neighbourLocation
+                case .floor: continue
+                }
+            }
         }
     }
 }
@@ -135,5 +220,11 @@ extension Day11.SeatingPlan {
             case .occupied: return "#"
             }
         }
+    }
+}
+
+extension Day11.SeatingPlan {
+    struct Location: Hashable {
+        let x, y: Int
     }
 }
