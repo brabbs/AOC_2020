@@ -22,14 +22,20 @@ struct Day14: Solution {
     }
 
     func second() -> Any {
-        "Second answer not yet implemented"
+        var portComputer = PortComputer()
+        time { portComputer.runInitialisationVersionTwo(program: instructions) }
+        return portComputer.memorySum()
     }
 }
 
 extension Day14 {
     struct PortComputer {
         var memory = [Int: Int]()
-        var mask: Instruction.Mask = .trivial
+        var mask: Instruction.Mask = .trivial {
+            didSet { updateAddressAdditions() }
+        }
+        // Used for version 2 of the program
+        var addressAdditions: [Int] = []
 
         mutating func runInitialisation(program: [Instruction]) {
             for instruction in program {
@@ -45,6 +51,38 @@ extension Day14 {
             let finalValue = maskedValue + mask.addition
             memory[writeInstruction.address] = finalValue
         }
+
+        mutating func runInitialisationVersionTwo(program: [Instruction]) {
+            for instruction in program {
+                switch instruction {
+                case .mask(let newMask): mask = newMask
+                case .write(let writeInstruction): runVersionTwo(writeInstruction)
+                }
+            }
+        }
+
+        mutating func runVersionTwo(_ writeInstruction: Instruction.Write) {
+            let baseAddress = writeInstruction.address | mask.forcedHigh
+
+            // Make all the floating bits low to start
+            let maskedAddress = baseAddress & ~mask.floatingBits
+
+            for addition in addressAdditions {
+                memory[maskedAddress + addition] = writeInstruction.value
+            }
+        }
+
+        mutating func updateAddressAdditions() {
+            addressAdditions = stride(from: 0, to: 36, by: 1).reduce(into: [0]) { additions, i in
+                if mask.floatingBits>>i % 2 == 1 {
+                    // This bit is floating. Need additions where it's high.
+                    let newHighBit = 1<<i
+                    let newValues = additions.lazy.map { $0 + newHighBit }
+                    additions.append(contentsOf: newValues)
+                }
+            }
+        }
+
 
         /// Sum of all values in the memory
         func memorySum() -> Int {
@@ -107,8 +145,13 @@ extension Day14.PortComputer.Instruction {
         let mask: Int
         let addition: Int
 
+        // Version 2
+        let forcedHigh: Int
+        let floatingBits: Int
+
+        static let bitSize = 36
         /// Leaves everything unchanged
-        static let trivial = Mask(rawString: "mask = \(String(repeating: "X", count: 32))")
+        static let trivial = Mask(rawString: "mask = \(String(repeating: "X", count: bitSize))")
 
         init(rawString: String) {
             let code = rawString.split(separator: " ")[2]
@@ -130,15 +173,23 @@ extension Day14.PortComputer.Instruction {
                     return binary + "1"
                 }
             }
-
             addition = Int(additionString, radix: 2) ?? 0
+
+            // These happen to be the same.
+            // Saving them under different names makes them easier to use.
+            forcedHigh = addition
+            floatingBits = mask
         }
 
         var description: String {
             let maskDescription = String(mask, radix: 2)
-            let maskPadding = String(repeating: "0", count: 36 - maskDescription.count)
+            let maskPadding = String(
+                repeating: "0",
+                count: Self.bitSize - maskDescription.count)
             let additionDescription = String(addition, radix: 2)
-            let additionPadding = String(repeating: "0", count: 36 - additionDescription.count)
+            let additionPadding = String(
+                repeating: "0",
+                count: Self.bitSize - additionDescription.count)
             return """
                 Mask: \(maskPadding)\(maskDescription)
                 Add:  \(additionPadding)\(additionDescription)
