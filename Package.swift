@@ -14,11 +14,16 @@ let package = Package(
             .upToNextMinor(from: "0.3.0")
         ),
         .package(url: "https://github.com/sharplet/Regex.git", from: "2.1.0"),
+        .package(
+            name: "BigNumber",
+            url: "https://github.com/mkrd/Swift-BigInt.git",
+            .branch("master")
+        ),
     ],
     targets: [
         .target(
             name: "AOC_2020Solutions",
-            dependencies: ["Regex"],
+            dependencies: ["Regex", "BigNumber"],
             resources: [.process("Input/")]),
         .testTarget(name: "AOC_2020SolutionsTests", dependencies: ["AOC_2020Solutions"]),
 

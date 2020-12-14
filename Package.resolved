@@ -18,6 +18,15 @@
           "revision": "92646c0cdbaca076c8d3d0207891785b3379cbff",
           "version": "0.3.1"
         }
+      },
+      {
+        "package": "BigNumber",
+        "repositoryURL": "https://github.com/mkrd/Swift-BigInt.git",
+        "state": {
+          "branch": "master",
+          "revision": "8e8423ba6d7674bfd3d324d229014476e48568f5",
+          "version": null
+        }
       }
     ]
   },
