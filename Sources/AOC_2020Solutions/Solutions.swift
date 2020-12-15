@@ -27,20 +27,21 @@ public func getSolution(_ day: Int) throws -> Solution {
     let inputString = try String(contentsOf: inputFileLocation)
 
     switch day {
-    case 1: return Day01(input: inputString)
-    case 2: return Day02(input: inputString)
-    case 3: return Day03(input: inputString)
-    case 4: return Day04(input: inputString)
-    case 5: return Day05(input: inputString)
-    case 6: return Day06(input: inputString)
-    case 7: return Day07(input: inputString)
-    case 8: return Day08(input: inputString)
-    case 9: return Day09(input: inputString)
+    case 01: return Day01(input: inputString)
+    case 02: return Day02(input: inputString)
+    case 03: return Day03(input: inputString)
+    case 04: return Day04(input: inputString)
+    case 05: return Day05(input: inputString)
+    case 06: return Day06(input: inputString)
+    case 07: return Day07(input: inputString)
+    case 08: return Day08(input: inputString)
+    case 09: return Day09(input: inputString)
     case 10: return Day10(input: inputString)
     case 11: return Day11(input: inputString)
     case 12: return Day12(input: inputString)
     case 13: return Day13(input: inputString)
     case 14: return Day14(input: inputString)
+    case 15: return Day15(input: inputString)
     default: throw SolutionError.noSolutionForDay
     }
 }
