@@ -16,22 +16,39 @@ struct Day15: Solution {
     }
 
     func first() -> Any {
-        let limit = 2020 - starting.count
-        let game = time {
-            stride(from: 0, to: limit, by: 1).reduce(into: starting) { game, _ in
-                guard let last = game.last else { return }
-                if let indexOfLastOccurrence = game.dropLast().lastIndex(of: last) {
-                    let nextNumber = (game.endIndex - 1) - indexOfLastOccurrence
-                    game.append(nextNumber)
-                } else {
-                    game.append(0)
-                }
-            }
-        }
-        return game[2019]
+        time { gameNumber(at: 2020) }
     }
 
     func second() -> Any {
-        "Second answer not yet implemented"
+        time { gameNumber(at: 30_000_000) }
+    }
+
+    func gameNumber(at finalIndex: Int) -> Int {
+        var lastNumber =  starting.last!
+
+        // Add one to indices as game starts at 1 rather than 0
+        var lastIndices = lastIndexDictionary(for: starting.dropLast())
+            .mapValues { $0 + 1 }
+
+        for index in starting.endIndex..<finalIndex {
+            let nextNumber: Int
+            if let lastIndex = lastIndices[lastNumber] {
+                nextNumber = index - lastIndex
+            } else {
+                nextNumber = 0
+            }
+
+            lastIndices[lastNumber] = index
+            lastNumber = nextNumber
+        }
+
+        return lastNumber
+    }
+
+    func lastIndexDictionary(for array: [Int]) -> [Int: Int] {
+        array.enumerated().reduce(into: [Int: Int]()) { result, contents in
+            let (index, value) = contents
+            result[value] = index
+        }
     }
 }
