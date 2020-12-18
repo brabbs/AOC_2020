@@ -7,7 +7,6 @@
 
 import XCTest
 import AOC_2020Solutions
-import BigNumber
 
 final class Day15Test: XCTestCase {
     func testPartOne() throws {
