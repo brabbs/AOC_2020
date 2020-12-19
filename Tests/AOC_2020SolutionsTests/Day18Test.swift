@@ -14,4 +14,10 @@ final class Day18Test: XCTestCase {
         let first = try XCTUnwrap(solution.first() as? Int)
         XCTAssertEqual(first, 29839238838303)
     }
+
+    func testPartTwo() throws {
+        let solution = try getSolution(18)
+        let second = try XCTUnwrap(solution.second() as? Int)
+        XCTAssertEqual(second, 201376568795521)
+    }
 }

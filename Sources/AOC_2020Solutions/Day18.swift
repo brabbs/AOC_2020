@@ -6,27 +6,32 @@
 import Foundation
 
 struct Day18: Solution {
-    let expressions: [Expression]
+    let expressionStrings: [String]
 
     init(input: String) {
-        expressions = time {
+        expressionStrings = time {
             input
                 .trimmingCharacters(in: .whitespacesAndNewlines)
                 .components(separatedBy: "\n")
-                .map(Expression.init(rawString:))
         }
     }
 
     func first() -> Any {
         time {
-            expressions.lazy
+            expressionStrings.lazy
+                .map { Expression(rawString: $0, additionFirst: false) }
                 .map { $0.evaluate() }
                 .sum()
         }
     }
 
     func second() -> Any {
-        "Second answer not yet implemented"
+        time {
+            expressionStrings.lazy
+                .map { Expression(rawString: $0, additionFirst: true) }
+                .map { $0.evaluate() }
+                .sum()
+        }
     }
 }
 
@@ -44,20 +49,26 @@ extension Day18 {
             }
         }
 
-        init(rawString: String) {
+        init(rawString: String, additionFirst: Bool) {
             let expressionString = Self.removingSurroundingBrackets(
                 in: rawString.trimmingCharacters(in: .whitespaces)
             )
 
-            if let index = Self.lastTopLevelOperatorIndex(in: expressionString) {
-                let left = String(expressionString[..<index])
+            if let index = Self.lastTopLevelOperatorIndex(
+                in: expressionString,
+                additionFirst: additionFirst
+            ) {
+                let leftString = String(expressionString[..<index])
+                let left = Expression(rawString: leftString, additionFirst: additionFirst)
+
                 let nextIndex = expressionString.index(after: index)
-                let right = String(expressionString[nextIndex...])
+                let rightString = String(expressionString[nextIndex...])
+                let right = Expression(rawString: rightString, additionFirst: additionFirst)
 
                 if expressionString[index] == "+" {
-                    self = .add(Expression(rawString: left), Expression(rawString: right))
+                    self = .add(left, right)
                 } else {
-                    self = .multiply(Expression(rawString: left), Expression(rawString: right))
+                    self = .multiply(left, right)
                 }
 
                 return
@@ -66,12 +77,14 @@ extension Day18 {
             self = .value(Int(expressionString)!)
         }
 
-        /// Last operator not contained in brackets. This should be the last operation to be performed
+        /// Last operator not contained in brackets. This should be the last operation to be performed.
         static func lastTopLevelOperatorIndex(
-            in expressionString: String
+            in expressionString: String,
+            additionFirst: Bool
         ) -> (String.Index)? {
             var bracketCount = 0
 
+            var additionIndex: String.Index?
             for index in expressionString.indices.reversed() {
                 let char = expressionString[index]
 
@@ -79,12 +92,19 @@ extension Day18 {
                     bracketCount += 1
                 } else if char == ")" {
                     bracketCount -= 1
-                } else if (char == "+" || char == "*") && bracketCount == 0 {
+                } else if char == "+" && bracketCount == 0 {
+                    if additionFirst && additionIndex == nil {
+                        // Only use this addition if we don't find and multiplication
+                        additionIndex = index
+                    } else if !additionFirst {
+                        return index
+                    }
+                } else if char == "*" && bracketCount == 0 {
                     return index
                 }
             }
 
-            return nil
+            return additionIndex
         }
 
         static func removingSurroundingBrackets(in expressionString: String) -> String {
