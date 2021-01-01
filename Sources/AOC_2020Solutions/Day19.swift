@@ -7,9 +7,8 @@ import Foundation
 import Regex
 
 struct Day19: Solution {
-    let ruleDescriptions: [Int: String]
+    let initialRuleDirectory: [Int: Rule]
     let messages: [String]
-    
 
     init(input: String) {
         let parts = input.components(separatedBy: "\n\n")
@@ -17,12 +16,12 @@ struct Day19: Solution {
         let lines = parts[0]
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .components(separatedBy: "\n")
-        ruleDescriptions = lines.reduce(into: [Int: String]()) { ruleDescriptions, line in
+        initialRuleDirectory = lines.reduce(into: [Int: Rule]()) { ruleDescriptions, line in
             guard let colonIndex = line.firstIndex(of: ":") else { return }
             guard let ruleNumber = Int(line[..<colonIndex]) else { return }
             // Drop colon and space
-            let descrition = String(line[colonIndex...].dropFirst(2))
-            ruleDescriptions[ruleNumber] = descrition
+            let description = String(line[colonIndex...].dropFirst(2))
+            ruleDescriptions[ruleNumber] = Rule(rawValue: description)
         }
 
         messages = parts[1]
@@ -31,136 +30,88 @@ struct Day19: Solution {
     }
 
     func first() -> Any {
-        let ruleFactory = RuleFactory(ruleDescriptions: ruleDescriptions)
-        let ruleZero = ruleFactory.rule(0)
-        return messages.count(where: ruleZero.matchesExactly)
+        guard let ruleZero = initialRuleDirectory[0] else { return "No rule zero" }
+        let ruleComputer = RuleComputer(topRule: ruleZero, ruleDirectory: initialRuleDirectory)
+        return messages.count(where: ruleComputer.isMatch)
     }
 
     func second() -> Any {
-        "Second answer not yet implemented"
+        var ruleDirectory = initialRuleDirectory
+        ruleDirectory[8] = .or([42], [42, 8])
+        ruleDirectory[11] = .or([42, 31], [42, 11, 31])
+
+        guard let ruleZero = ruleDirectory[0] else { return "No rule zero" }
+        let ruleComputer = RuleComputer(topRule: ruleZero, ruleDirectory: ruleDirectory)
+        return messages.count(where: ruleComputer.isMatch)
     }
 }
 
 extension Day19 {
-    class RuleFactory {
-        let ruleDescriptions: [Int: String]
-        private(set) var rules = [Int: Rule]()
+    struct RuleComputer {
+        let topRule: Rule
+        let ruleDirectory: [Int: Rule]
 
-        init(ruleDescriptions: [Int: String]) {
-            self.ruleDescriptions = ruleDescriptions
+        func isMatch(_ input: String) -> Bool {
+            // Matches input if after matching we've consumed the whole string
+            matches(input[...], against: topRule).contains("")
         }
 
-        func rule(_ number: Int) -> Rule {
-            if let ruleFromCache = rules[number] {
-                return ruleFromCache
-            } else if let description = ruleDescriptions[number] {
-                let newRule = getRule(from: description)
-                rules[number] = newRule
-                return newRule
-            }
-
-            fatalError("No rule \(number)")
-        }
-
-        func getRule(from description: String) -> Rule {
-            if let singleNumberRule = getSingleNumberRule(from: description) {
-                return singleNumberRule
-            } else if let letterRule = getLetterRule(from: description) {
-                return letterRule
-            } else if let disjunctionRule = getDisjunctionRule(from: description) {
-                return disjunctionRule
-            } else if let conjunctionRule = getConjunctionRule(from: description) {
-                return conjunctionRule
-            }
-
-            fatalError("Badly formed description \(description)")
-        }
-
-        func getSingleNumberRule(from description: String) -> Rule? {
-            guard let number = Int(description) else { return nil }
-            return rule(number)
-        }
-
-        static let letterRegex = Regex(#"^"([a-z])"$"#)
-        func getLetterRule(from description: String) -> Rule? {
-            guard
-                let match = Self.letterRegex.firstMatch(in: description),
-                let character = match.captures[0]?.first
-            else {
-                return nil
-            }
-
-            return .letter(character)
-        }
-
-        func getDisjunctionRule(from description: String) -> Rule? {
-            guard let separatorIndex = description.firstIndex(of: "|") else { return nil }
-
-            let first = description[..<separatorIndex]
-                .trimmingCharacters(in: CharacterSet.decimalDigits.inverted)
-            let second = description[separatorIndex...]
-                .trimmingCharacters(in: CharacterSet.decimalDigits.inverted)
-
-            return getRule(from: first) | getRule(from: second)
-        }
-
-        func getConjunctionRule(from description: String) -> Rule? {
-            let optionalNumbers = description
-                .components(separatedBy: " ")
-                .map { Int($0) }
-
-            guard optionalNumbers.allSatisfy({ $0 != nil }) else {
-                return nil
-            }
-
-            let rules = optionalNumbers
-                .compactMap { $0 }
-                .map(rule(_:))
-
-            return .consecutive(rules)
-        }
-    }
-}
-
-infix operator >>: AdditionPrecedence
-extension Day19 {
-    struct Rule {
-        let parser: (Substring) -> String.Index?
-
-        func matchesExactly(_ input: String) -> Bool {
-            parser(Substring(input)) == input.endIndex
-        }
-
-        static let trivial = Rule { $0.startIndex }
-
-        static func letter(_ letter: Character) -> Rule {
-            Rule { (input: Substring) -> String.Index? in
-                guard let first = input.first else { return nil }
-                return first == letter ? input.index(after: input.startIndex) : nil
-            }
-        }
-
-        static func |(lhs: Rule, rhs: Rule) -> Rule {
-            Rule { (input: Substring) -> String.Index? in
-                if let leftMatch = lhs.parser(input) {
-                    return leftMatch
-                } else if let rightMatch = rhs.parser(input) {
-                    return rightMatch
-                } else {
-                    return nil
+        private func matches(_ input: Substring, against rule: Rule) -> [Substring] {
+            switch rule {
+            case let .letter(letter):
+                return input.first == letter ? [input.dropFirst()] : []
+            case let .consecutive(rules):
+                return matches(input, againstConsecutive: rules)
+            case let .or(firstRules, secondRules):
+                return [firstRules, secondRules].flatMap { ruleNumbers in
+                    matches(input, againstConsecutive: ruleNumbers)
                 }
             }
         }
 
-        static func >>(lhs: Rule, rhs: Rule) -> Rule {
-            Rule { (input: Substring) -> String.Index? in
-                guard let firstMatch = lhs.parser(input) else { return nil }
-                return rhs.parser(input[firstMatch...])
+        private func matches(_ input: Substring, againstConsecutive rules: [Int]) -> [Substring] {
+            var result = [input]
+            for ruleNumber in rules {
+                guard let nextRule = ruleDirectory[ruleNumber] else { return [] }
+                result = result.flatMap { input in matches(input, against: nextRule) }
+            }
+            return result
+        }
+    }
+}
+
+extension Day19 {
+    enum Rule {
+        case letter(Character)
+        case consecutive([Int])
+        case or([Int], [Int])
+
+        static let letterRegex = Regex(#"^"([a-z])"$"#)
+        static let consecutiveRegex = Regex(#"^((?:\d+ ?)+)$"#)
+        static let orRegex = Regex(#"^((?:\d+ ?)+)\| ((?:\d+ ?)+)$"#)
+        init?(rawValue: String) {
+            if let captures = Self.letterRegex.firstMatch(in: rawValue)?.captures {
+                guard let character = captures[0]?.first else { return nil }
+                self = .letter(character)
+            } else if let captures = Self.consecutiveRegex.firstMatch(in: rawValue)?.captures {
+                guard let numbersString = captures[0] else { return nil }
+                let numbers = Self.numberList(from: numbersString)
+                self = .consecutive(numbers)
+            } else if let captures = Self.orRegex.firstMatch(in: rawValue)?.captures {
+                guard let first = captures[0] else { return nil }
+                guard let second = captures[1] else { return nil }
+                self = .or(
+                    Self.numberList(from: first),
+                    Self.numberList(from: second)
+                )
+            } else {
+                // Doesn't match any of the regexes
+                return nil
             }
         }
 
-        static func consecutive(_ rules: [Rule]) -> Rule {
-            rules.reduce(.trivial, >>)
+        static func numberList(from rawString: String) -> [Int] {
+            return rawString.split(separator: " ").compactMap { Int($0) }
         }
     }
 }
